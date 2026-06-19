@@ -1,17 +1,10 @@
 /**
  * Composant DatePicker réutilisable en React
  * Remplace le plugin jQuery dateTimePicker
- *
- * Props:
- * - value: string (format 'YYYY-MM-DD' ou 'MM/DD/YYYY')
- * - onChange: (value: string) => void
- * - format: 'MM/DD/YYYY' | 'YYYY-MM-DD' (défaut: 'MM/DD/YYYY')
- * - placeholder: string
- * - label: string (optionnel)
- * - disabled: boolean (optionnel)
  */
 
 import React, { useState } from 'react';
+import './DatePicker.css';
 
 interface DatePickerProps {
   value: string;
@@ -35,7 +28,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Convertit string date en format souhaité
   const formatDate = (date: Date, fmt: string): string => {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -44,7 +36,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return fmt === 'MM/DD/YYYY' ? `${month}/${day}/${year}` : `${year}-${month}-${day}`;
   };
 
-  // Parse une date string
   const parseDate = (dateStr: string): Date | null => {
     if (!dateStr) return null;
 
@@ -56,7 +47,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     }
   };
 
-  // Génère les jours du mois
   const getDaysInMonth = (date: Date): (number | null)[] => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -89,8 +79,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const monthYear = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
-    <div className="relative w-full">
-      {label && <label className="block text-sm font-medium mb-2">{label}</label>}
+    <div className="date-picker-container">
+      {label && <label className="date-picker-label">{label}</label>}
 
       <input
         id={id}
@@ -101,44 +91,28 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         disabled={disabled}
         readOnly
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 cursor-pointer"
+        className="date-picker-input"
       />
 
       {isOpen && !disabled && (
-        <div className="absolute z-10 mt-2 p-4 bg-white border border-gray-300 rounded-md shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={handlePrevMonth}
-              className="px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded"
-            >
-              ←
-            </button>
-            <h3 className="text-sm font-semibold">{monthYear}</h3>
-            <button
-              onClick={handleNextMonth}
-              className="px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded"
-            >
-              →
-            </button>
+        <div className="date-picker-dropdown">
+          <div className="date-picker-header">
+            <button onClick={handlePrevMonth} className="date-picker-nav-btn">←</button>
+            <h3>{monthYear}</h3>
+            <button onClick={handleNextMonth} className="date-picker-nav-btn">→</button>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-center text-xs">
+          <div className="date-picker-calendar">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="font-semibold text-gray-600 w-6 h-6">
-                {day[0]}
-              </div>
+              <div key={day} className="date-picker-day-header">{day[0]}</div>
             ))}
             {days.map((day, idx) => (
               <button
                 key={idx}
                 onClick={() => day && handleDayClick(day)}
                 disabled={!day}
-                className={`w-6 h-6 text-xs rounded hover:bg-blue-100 ${
-                  !day ? 'invisible' : 'cursor-pointer hover:bg-blue-500 hover:text-white'
-                } ${
-                  value && parseDate(value)?.getDate() === day
-                    ? 'bg-blue-500 text-white'
-                    : ''
+                className={`date-picker-day ${!day ? 'disabled' : ''} ${
+                  value && parseDate(value)?.getDate() === day ? 'selected' : ''
                 }`}
               >
                 {day}
@@ -146,10 +120,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             ))}
           </div>
 
-          <button
-            onClick={() => setIsOpen(false)}
-            className="w-full mt-4 px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded"
-          >
+          <button onClick={() => setIsOpen(false)} className="date-picker-close-btn">
             Fermer
           </button>
         </div>

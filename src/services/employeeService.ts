@@ -2,18 +2,9 @@
  * Service pour gérer les employés via localStorage
  */
 
-export interface Employee {
-  id: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  startDate: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  department: string;
-}
+import type { Employee } from '../types/index';
+
+export type { Employee } from '../types/index';
 
 const STORAGE_KEY = 'hrnet_employees';
 

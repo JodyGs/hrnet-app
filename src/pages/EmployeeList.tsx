@@ -4,7 +4,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { employeeService, Employee } from '../services/employeeService';
+import type { Employee } from '../types/index';
+import { employeeService } from '../services/employeeService';
 
 interface EmployeeListProps {
   onCreateNew?: () => void;
@@ -21,14 +22,12 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ onCreateNew }) => {
     setEmployees(data);
   }, []);
 
-  // Filter employees based on search term
   const filteredEmployees = employees.filter(emp =>
     Object.values(emp).some(val =>
       String(val).toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
-  // Sort employees
   const sortedEmployees = [...filteredEmployees].sort((a, b) => {
     const aVal = a[sortField];
     const bVal = b[sortField];
@@ -54,122 +53,89 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ onCreateNew }) => {
     }
   };
 
-  const SortHeader: React.FC<{ field: keyof Employee; label: string }> = ({ field, label }) => (
-    <th
-      onClick={() => handleSort(field)}
-      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-    >
-      <div className="flex items-center gap-2">
-        {label}
-        {sortField === field && (
-          <span className="text-blue-600">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-        )}
-      </div>
-    </th>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center justify-center bg-blue-600 text-white py-8">
-        <h1 className="text-4xl font-bold">HRnet</h1>
+    <div>
+      <div className="title">
+        <h1>HRnet</h1>
       </div>
 
-      <div className="py-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Current Employees</h2>
-            <button
-              onClick={onCreateNew}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
-            >
-              Create Employee
-            </button>
-          </div>
+      <div className="container">
+        <h2>Current Employees</h2>
+        <button onClick={onCreateNew}>Create Employee</button>
 
-          {/* Search */}
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="Search employees..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-            <p className="text-sm text-gray-500 mt-2">
-              Showing {sortedEmployees.length} of {employees.length} entries
-            </p>
-          </div>
+        <input
+          type="text"
+          placeholder="Search employees..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ marginTop: '1rem', marginBottom: '1rem', width: '100%', maxWidth: '500px' }}
+        />
+        <p>Showing {sortedEmployees.length} of {employees.length} entries</p>
 
-          {/* Table */}
-          <div className="overflow-x-auto shadow-md rounded-lg">
-            <table className="w-full bg-white">
-              <thead className="bg-gray-100 border-b border-gray-300">
-                <tr>
-                  <SortHeader field="firstName" label="First Name" />
-                  <SortHeader field="lastName" label="Last Name" />
-                  <SortHeader field="startDate" label="Start Date" />
-                  <SortHeader field="department" label="Department" />
-                  <SortHeader field="dateOfBirth" label="Date of Birth" />
-                  <SortHeader field="street" label="Street" />
-                  <SortHeader field="city" label="City" />
-                  <SortHeader field="state" label="State" />
-                  <SortHeader field="zipCode" label="Zip Code" />
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {sortedEmployees.map(emp => (
-                  <tr key={emp.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.firstName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.lastName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.startDate}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.department}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.dateOfBirth}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.street}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.city}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.state}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {emp.zipCode}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => handleDelete(emp.id)}
-                        className="text-red-600 hover:text-red-900 font-medium"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <table>
+          <thead>
+            <tr>
+              <th onClick={() => handleSort('firstName')} style={{ cursor: 'pointer' }}>
+                First Name {sortField === 'firstName' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('lastName')} style={{ cursor: 'pointer' }}>
+                Last Name {sortField === 'lastName' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('startDate')} style={{ cursor: 'pointer' }}>
+                Start Date {sortField === 'startDate' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('department')} style={{ cursor: 'pointer' }}>
+                Department {sortField === 'department' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('dateOfBirth')} style={{ cursor: 'pointer' }}>
+                Date of Birth {sortField === 'dateOfBirth' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('street')} style={{ cursor: 'pointer' }}>
+                Street {sortField === 'street' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('city')} style={{ cursor: 'pointer' }}>
+                City {sortField === 'city' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('state')} style={{ cursor: 'pointer' }}>
+                State {sortField === 'state' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('zipCode')} style={{ cursor: 'pointer' }}>
+                Zip Code {sortField === 'zipCode' && (sortOrder === 'asc' ? '↑' : '↓')}
+              </th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedEmployees.map(emp => (
+              <tr key={emp.id}>
+                <td>{emp.firstName}</td>
+                <td>{emp.lastName}</td>
+                <td>{emp.startDate}</td>
+                <td>{emp.department}</td>
+                <td>{emp.dateOfBirth}</td>
+                <td>{emp.street}</td>
+                <td>{emp.city}</td>
+                <td>{emp.state}</td>
+                <td>{emp.zipCode}</td>
+                <td>
+                  <button onClick={() => handleDelete(emp.id)} style={{ padding: '0.25rem 0.5rem' }}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-          {sortedEmployees.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              {searchTerm ? 'Aucun employé trouvé.' : 'Aucun employé enregistré.'}
-            </div>
-          )}
-        </div>
+        {sortedEmployees.length === 0 && (
+          <p style={{ marginTop: '1rem' }}>
+            {searchTerm ? 'Aucun employé trouvé.' : 'Aucun employé enregistré.'}
+          </p>
+        )}
+
+        <a href="#" onClick={onCreateNew} style={{ marginTop: '1rem', display: 'block' }}>
+          Home
+        </a>
       </div>
     </div>
   );
